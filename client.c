@@ -13,6 +13,7 @@ int main()
 {  
     // 声明并初始化一个客户端的socket地址结构  
     struct sockaddr_in client_addr;  
+	//置字节字符串client_addr为零,http://blog.csdn.net/joeblackzqq/article/details/8257877(bzero, memset ,setmem 区别)
     bzero(&client_addr, sizeof(client_addr));  
     client_addr.sin_family = AF_INET;  
     client_addr.sin_addr.s_addr = htons(INADDR_ANY);  
@@ -27,6 +28,8 @@ int main()
     }  
   
     // 绑定客户端的socket和客户端的socket地址结构 非必需  
+	// socket编程之bind()函数http://blog.csdn.net/david_xtd/article/details/7090590
+	//把名字和套接字相关联
     if(-1 == (bind(client_socket_fd, (struct sockaddr*)&client_addr, sizeof(client_addr))))  
     {  
         perror("Client Bind Failed:");  
@@ -37,6 +40,7 @@ int main()
     struct sockaddr_in server_addr;  
     bzero(&server_addr, sizeof(server_addr));  
     server_addr.sin_family = AF_INET;  
+	//inet_pton IP 地址转换函数,并储存在server_addr.sin_addr中
     if(inet_pton(AF_INET, "192.168.1.100", &server_addr.sin_addr) == 0)  
     {  
         perror("Server IP Address Error:");  
@@ -71,7 +75,7 @@ int main()
     // 向服务器发送buffer中的数据  
 	// const char *  buffer ="/home/root/location_out.txt";
 	 //const char *  file_name ="/home/root/location_out.txt";
-	
+	//发送文件名
     if(send(client_socket_fd, buffer, BUFFER_SIZE, 0) < 0)  
     {  
         perror("Send File Name Failed:");  
@@ -86,12 +90,13 @@ int main()
             printf("File:%s Not Found\n", file_name);  
         }  
         else  
-        {  
+        {  	
             bzero(buffer, BUFFER_SIZE);  
             int length = 0;  
             // 每读取一段数据，便将其发送给客户端，循环直到文件读完为止  
             while((length = fread(buffer, sizeof(char), BUFFER_SIZE, fp)) > 0)  
             {  
+			//发送文件内容
                 if(send(client_socket_fd, buffer, length, 0) < 0)  
                 {  
                     printf("Send File:%s Failed./n", file_name);  
